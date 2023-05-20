@@ -36,6 +36,9 @@ app.include_router(
 )
 
 
+current_user = fastapi_users.current_user()
+
+
 @app.get("/blogs")
 async def get_blogs(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_async_session)):
     """Async function for get all blogs from db"""
@@ -63,10 +66,10 @@ async def get_blog_by_id(blog_id: int, db: AsyncSession = Depends(get_async_sess
 
 
 @app.post("/blog/create/")
-async def create_blog(blog: BlogCreate, user_id: int, db: AsyncSession = Depends(get_async_session)):
+async def create_blog(blog: BlogCreate, user: User = Depends(current_user), db: AsyncSession = Depends(get_async_session)):
     """Async function for create blog"""
     try:
-        db_blog = models.Blog(**blog.dict(), author_id=user_id)
+        db_blog = models.Blog(**blog.dict(), author_id=user.id)
         db.add(db_blog)
         await db.commit()
         await db.refresh(db_blog)
