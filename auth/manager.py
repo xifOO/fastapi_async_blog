@@ -1,3 +1,4 @@
+import config
 from typing import Optional
 
 from fastapi import Depends, Request
@@ -6,7 +7,8 @@ from fastapi_users import BaseUserManager, IntegerIDMixin, InvalidPasswordExcept
 from auth.db import User, get_user_db
 from models.schemas import UserCreate
 
-SECRET = "SECRET"
+
+SECRET = config.SECRET
 
 
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
