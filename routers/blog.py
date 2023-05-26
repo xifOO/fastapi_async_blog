@@ -12,7 +12,9 @@ from auth.db import User, get_async_session
 from models.schemas import BlogCreate, BlogUpdate
 
 
-router = APIRouter()
+router = APIRouter(
+    tags=["blog"]
+)
 
 
 fastapi_users = FastAPIUsers[User, int](
