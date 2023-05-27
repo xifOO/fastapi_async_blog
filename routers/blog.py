@@ -1,28 +1,22 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
-from fastapi_users import FastAPIUsers
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.auth import auth_backend
-from auth.manager import get_user_manager
+from auth.auth import get_current_user
 from models import models
 
-from auth.db import User, get_async_session
-from models.schemas import BlogCreate, BlogUpdate
+from auth.db import get_async_session
+from models.models import User
+
+from schemas.blog_schemas import BlogCreate, BlogUpdate
 
 
 router = APIRouter(
     tags=["blog"]
 )
-
-
-fastapi_users = FastAPIUsers[User, int](
-    get_user_manager,
-    [auth_backend],
-)
-
-current_user = fastapi_users.current_user()
 
 
 @router.get("/blogs")
@@ -31,10 +25,14 @@ async def get_blogs(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(g
     try:
         blogs = await db.execute(select(models.Blog).offset(skip).limit(limit))
         result = blogs.scalars().all()
+
+        if result is None:
+            return "Blogs does not exist"
+
         return result
 
     except SQLAlchemyError as e:
-        """DB error"""
+        """Database query error"""
         return {"error": str(e)}
 
 
@@ -44,15 +42,20 @@ async def get_blog_by_id(blog_id: int, db: AsyncSession = Depends(get_async_sess
     try:
         blog = await db.execute(select(models.Blog).filter(models.Blog.id == blog_id))
         result = blog.scalars().first()
+
+        if result is None:
+            return "Blog by this id does not exist"
+
         return result
 
     except SQLAlchemyError as e:
-        """DB error"""
+        """Database query error"""
         return {"error": str(e)}
 
 
 @router.post("/blog/create/")
-async def create_blog(blog: BlogCreate, user: User = Depends(current_user), db: AsyncSession = Depends(get_async_session)):
+async def create_blog(blog: BlogCreate, user: Annotated[User, Depends(get_current_user)],
+                      db: AsyncSession = Depends(get_async_session)):
     """Async function for create blog"""
     try:
         db_blog = models.Blog(**blog.dict(), author_id=user.id)
@@ -62,7 +65,7 @@ async def create_blog(blog: BlogCreate, user: User = Depends(current_user), db: 
         return db_blog
 
     except SQLAlchemyError as e:
-        """DB error"""
+        """Database query error"""
         return {"error": str(e)}
 
     except ValueError as e:
@@ -71,19 +74,44 @@ async def create_blog(blog: BlogCreate, user: User = Depends(current_user), db: 
 
 
 @router.put("/blog/update/{blog_id}")
-async def update_blog_by_id(data: BlogUpdate, blog_id: int, user: User = Depends(current_user), db: AsyncSession = Depends(get_async_session)):
+async def update_blog_by_id(data: BlogUpdate, blog_id: int, user: Annotated[User, Depends(get_current_user)],
+                            db: AsyncSession = Depends(get_async_session)):
     """Async function for update blog by id"""
     try:
         blog = await db.execute(select(models.Blog).filter(models.Blog.id == blog_id))
         result = blog.scalars().first()
+
+        if result is None:
+            return "Blog by this id does not exist"
+
         if result.author_id == user.id:
             result.text = data.text
             result.name = data.name
             result.updated_at = data.updated_at
         else:
             return "You not author this blog!"
+
         await db.commit()
         await db.refresh(result)
         return result
+
     except SQLAlchemyError as e:
-        return {"error": e}
+        """Database query error"""
+        return {"error": str(e)}
+
+
+@router.get("/my/blogs")
+async def get_user_blogs(user: Annotated[User, Depends(get_current_user)], db: AsyncSession = Depends(get_async_session)):
+    """Async function for get all user blogs"""
+    try:
+        blogs = await db.execute(select(models.Blog).filter(models.Blog.author_id == user.id))
+        result = blogs.scalars().all()
+
+        if result is None:
+            return "You do not have blogs"
+
+        return result
+
+    except SQLAlchemyError as e:
+        """Database query error"""
+        return {"error": str(e)}
