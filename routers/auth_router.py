@@ -61,9 +61,10 @@ async def register_user(user: UserRegistrationRequest, db: AsyncSession = Depend
         await db.refresh(new_user)
         return {"username": new_user.username, "email": new_user.email}
 
-    except SQLAlchemyError as e:
+    except SQLAlchemyError:
         """Database query error"""
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail="Database error")
 
     except ValidationError as e:
-        return {"error": str(e)}
+        """Validation error"""
+        raise HTTPException(status_code=400, detail="Validation error")

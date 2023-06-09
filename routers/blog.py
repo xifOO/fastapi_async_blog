@@ -1,6 +1,7 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,9 +32,9 @@ async def get_blogs(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(g
 
         return result
 
-    except SQLAlchemyError as e:
+    except SQLAlchemyError:
         """Database query error"""
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail="Database error")
 
 
 @router.get("/blog/{blog_id}")
@@ -48,9 +49,9 @@ async def get_blog_by_id(blog_id: int, db: AsyncSession = Depends(get_async_sess
 
         return result
 
-    except SQLAlchemyError as e:
+    except SQLAlchemyError:
         """Database query error"""
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail="Database error")
 
 
 @router.post("/blog/create/")
@@ -64,13 +65,13 @@ async def create_blog(blog: BlogCreate, user: Annotated[User, Depends(get_curren
         await db.refresh(db_blog)
         return db_blog
 
-    except SQLAlchemyError as e:
+    except SQLAlchemyError:
         """Database query error"""
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail="Database error")
 
-    except ValueError as e:
-        """Validation Error"""
-        return {"error": str(e)}
+    except ValidationError as e:
+        """Validation error"""
+        raise HTTPException(status_code=400, detail="Validation error")
 
 
 @router.put("/blog/update/{blog_id}")
@@ -95,9 +96,9 @@ async def update_blog_by_id(data: BlogUpdate, blog_id: int, user: Annotated[User
         await db.refresh(result)
         return result
 
-    except SQLAlchemyError as e:
+    except SQLAlchemyError:
         """Database query error"""
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail="Database error")
 
 
 @router.get("/my/blogs")
@@ -112,6 +113,7 @@ async def get_user_blogs(user: Annotated[User, Depends(get_current_user)], db: A
 
         return result
 
-    except SQLAlchemyError as e:
+    except SQLAlchemyError:
         """Database query error"""
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail="Database error")
+
