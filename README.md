@@ -47,7 +47,7 @@ In the .env file, set the following environment variables:
 * ***POSTGRES_HOST=your_host***
 * ***POSTGRES_PORT=your_port***
 * ***POSTGRES_NAME=your_name***
-* ***SECRET=your_secret_key***
+* ***SECRET=your_secret_key*** # ***openssl rand -hex 32***
 * ***ALGORITHM = your_algorithm***
 * ***ACCESS_TOKEN_EXPIRE_MINUTES = your_access_token_expire_minutes***
 
