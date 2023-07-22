@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import ValidationError
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -13,7 +13,6 @@ from auth.db import get_async_session
 from config import ACCESS_TOKEN_EXPIRE_MINUTES
 from schemas.auth_schemas import Token, User, UserRegistrationRequest, UserRegistrationResponse
 from models import models
-
 
 router = APIRouter(
     tags=["auth"]
@@ -55,11 +54,16 @@ async def register_user(user: UserRegistrationRequest, db: AsyncSession = Depend
             raise HTTPException(status_code=422, detail="Missing username")
         if not user.email:
             raise HTTPException(status_code=422, detail="Missing email")
-        new_user = models.User(username=user.username, hashed_password=get_password_hash(user.password), email=user.email)
+        new_user = models.User(username=user.username, hashed_password=get_password_hash(user.password),
+                               email=user.email)
         db.add(new_user)
         await db.commit()
         await db.refresh(new_user)
         return {"username": new_user.username, "email": new_user.email}
+
+    except IntegrityError:
+        """Unique Violation Error"""
+        raise HTTPException(status_code=422, detail="This username or email already exists.")
 
     except SQLAlchemyError:
         """Database query error"""
