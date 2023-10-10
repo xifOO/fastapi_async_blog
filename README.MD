@@ -3,7 +3,7 @@
 ## Requirements
 
 - Python 3.11
-- FastAPI 
+- FastAPI
 - SQLAlchemy
 - PostgreSQL
 - Alembic
@@ -11,27 +11,30 @@
 
 ## Installation
 
-## Clone the repository:
+1. **Clone the repository:**
 
-**git clone https://github.com/fastapi_async_blog.git**
-**cd fastapi_async_blog**
+   ```bash
+   git clone https://github.com/fastapi_async_blog.git
+   cd fastapi_async_blog
+Create and activate a virtual environment:
+bash
+Copy code
+python3.11 -m venv venv
+source venv/bin/activate
+Install the dependencies:
+bash
+Copy code
+pip install -r requirements.txt
+Create a PostgreSQL database and configure the connection in the config.py file.
+Apply Alembic migrations to create the database schema:
+bash
+Copy code
+alembic upgrade head
+Running
 
-# Create and activate a virtual environment:
+To run your FastAPI application, execute the following command:
 
-**python3.11 -m venv venv**
-**source venv/bin/activate**
-
-##Install the dependencies:
-
-**pip install -r requirements.txt**
-
-#Create a PostgreSQL database and configure the connection in the config.py file.
-#Apply Alembic migrations to create the database schema:
-
-**alembic upgrade head**
-
-
-#To run your FastAPI application, execute the following command:
-
-**uvicorn main:app --host 0.0.0.0 --port 8000 --reload**
-**The application will be accessible at http://localhost:8000.**
+bash
+Copy code
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+The application will be accessible at http://localhost:8000.
