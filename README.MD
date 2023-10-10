@@ -18,6 +18,7 @@
    cd fastapi_async_blog
 
 
+   ```
 
 2. **Create and activate a virtual environment:**
 
@@ -25,6 +26,7 @@
    python3.11 -m venv venv
    source venv/bin/activate
 
+   ```
 3. **Install the dependencies:**
 
    ```bash
