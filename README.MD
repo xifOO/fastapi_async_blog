@@ -37,7 +37,6 @@
 
    ```bash
    alembic upgrade head
-   Running
 
 5. **To run your FastAPI application, execute the following command:**
 
