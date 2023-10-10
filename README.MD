@@ -16,8 +16,6 @@
    ```bash
    git clone https://github.com/fastapi_async_blog.git
    cd fastapi_async_blog
-
-
    ```
 
 2. **Create and activate a virtual environment:**
@@ -25,8 +23,8 @@
    ```bash
    python3.11 -m venv venv
    source venv/bin/activate
-
    ```
+
 3. **Install the dependencies:**
 
    ```bash
@@ -42,4 +40,6 @@
 
    ```bash
    uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-   The application will be accessible at http://localhost:8000.
+   ```
+
+   **The application will be accessible at http://localhost:8000.**
